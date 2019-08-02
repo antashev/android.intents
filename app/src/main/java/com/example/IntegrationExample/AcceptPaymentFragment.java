@@ -33,7 +33,7 @@ public class AcceptPaymentFragment extends Fragment {
     private String   mImagePath;
     private EditText edtLogin, edtPassword, edtExtID, edtAmount, edtDescription, edtReceiptEmail, edtReceiptPhone;
     private EditText edtHeader, edtFooter;
-    private CheckBox cbAmount, cbOffline, cbProduct, cbAux, cbReaderType, cbPrintCopy;
+    private CheckBox cbAmount, cbOffline, cbProduct, cbAux, cbReaderType, cbPrintCopy, cbTags;
     private RadioGroup rgInputType;
     private Button   btnSelectPhoto, btnCapturePhoto;
     private Button   btnAcceptPayment;
@@ -41,12 +41,14 @@ public class AcceptPaymentFragment extends Fragment {
 
     private String product, readerType;
     private ArrayAdapter<String> purchasesAdapter;
+    private String tags;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         readerType = null;
         product = "";
+        tags = "";
         purchasesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.test_list_item, new ArrayList<String>());
     }
 
@@ -66,6 +68,16 @@ public class AcceptPaymentFragment extends Fragment {
                     showPurchasesDialog();
                 else
                     purchasesAdapter.clear();
+            }
+        });
+        cbTags.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(final CompoundButton compoundButton, final boolean checked) {
+                if (checked) {
+                    showTagsDialog();
+                } else {
+                    tags = "";
+                }
             }
         });
         cbProduct.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -93,6 +105,7 @@ public class AcceptPaymentFragment extends Fragment {
         super.onPause();
         cbAmount.setOnCheckedChangeListener(null);
         cbAux.setOnCheckedChangeListener(null);
+        cbTags.setOnCheckedChangeListener(null);
         cbProduct.setOnCheckedChangeListener(null);
         cbReaderType.setOnCheckedChangeListener(null);
     }
@@ -113,6 +126,7 @@ public class AcceptPaymentFragment extends Fragment {
         edtFooter = (EditText)view.findViewById(R.id.edtFooter);
         cbProduct = (CheckBox)view.findViewById(R.id.cbProduct);
         cbAux = (CheckBox)view.findViewById(R.id.cbAux);
+        cbTags = (CheckBox)view.findViewById(R.id.cbTags);
         cbReaderType = (CheckBox)view.findViewById(R.id.cbReaderType);
         cbPrintCopy = (CheckBox)view.findViewById(R.id.cbPrintCopy);
         cbOffline = (CheckBox)view.findViewById(R.id.cbOffline);
@@ -150,13 +164,13 @@ public class AcceptPaymentFragment extends Fragment {
         btnAcceptPayment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                String s = "{\"Purchases\": [{\"Title\":\"Тариф за пересылку\", \"Price\":680.00,\"Quantity\": 1, \"TaxCode\":[\"VAT1800\"]},{\"Title\":\"Страхование\", \"Price\":0.16,\"Quantity\": 1, \"TaxCode\":[\"VAT1800\"]},{\"Title\":\"Объявленная ценность\", \"Price\":28.00,\"Quantity\": 1, \"TaxCode\":[\"VAT1800\"]},{\"Title\":\"Тариф за объявленную ценность\", \"Price\":0.28,\"Quantity\": 1, \"TaxCode\":[\"VAT1800\"]}]}";
-//
-//                startActivityForResult(new Intent("ru.ibox.pro.acceptpayment")
-//                        .putExtra("Email", getString(R.string.login))
-//                        .putExtra("Password", getString(R.string.password))
-//                .putExtra("PrinterHeader", "Внутренняя почта\nZX123456789ZX\nОтправлние EMS\nс объявл. ценностью и налож. платежом\nФизическое лицо\nas\nКуда: 443051, САМАРСКАЯ ОБЛАСТЬ, САМАРА\nАвиа транспорт\nВес: 1.000кг.")
-//                        .putExtra("Purchases", s), 500);
+                //                String s = "{\"Purchases\": [{\"Title\":\"Тариф за пересылку\", \"Price\":680.00,\"Quantity\": 1, \"TaxCode\":[\"VAT1800\"]},{\"Title\":\"Страхование\", \"Price\":0.16,\"Quantity\": 1, \"TaxCode\":[\"VAT1800\"]},{\"Title\":\"Объявленная ценность\", \"Price\":28.00,\"Quantity\": 1, \"TaxCode\":[\"VAT1800\"]},{\"Title\":\"Тариф за объявленную ценность\", \"Price\":0.28,\"Quantity\": 1, \"TaxCode\":[\"VAT1800\"]}]}";
+                //
+                //                startActivityForResult(new Intent("ru.ibox.pro.acceptpayment")
+                //                        .putExtra("Email", getString(R.string.login))
+                //                        .putExtra("Password", getString(R.string.password))
+                //                .putExtra("PrinterHeader", "Внутренняя почта\nZX123456789ZX\nОтправлние EMS\nс объявл. ценностью и налож. платежом\nФизическое лицо\nas\nКуда: 443051, САМАРСКАЯ ОБЛАСТЬ, САМАРА\nАвиа транспорт\nВес: 1.000кг.")
+                //                        .putExtra("Purchases", s), 500);
 
                 double amount = Double.parseDouble(edtAmount.getText().toString());
                 String description = edtDescription.getText().toString();
@@ -164,14 +178,14 @@ public class AcceptPaymentFragment extends Fragment {
                 acceptPayment(amount, description, mImagePath);
             }
         });
-		return view;
-	}
+        return view;
+    }
 
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-		if (requestCode == 250 && resultCode == Activity.RESULT_OK) {
+        if (requestCode == 250 && resultCode == Activity.RESULT_OK) {
             mImagePath = getCameraImagePath();
             return;
         }
@@ -186,13 +200,13 @@ public class AcceptPaymentFragment extends Fragment {
         }
 
         if (requestCode == 500 && resultCode != Activity.RESULT_OK) {
-        	if (data != null && data.getExtras().containsKey("ErrorMessage"))
-        		txtResult.setText(data.getExtras().getString("ErrorMessage"));
-        	else
-        		txtResult.setText("Платеж не проведен!");
+            if (data != null && data.getExtras().containsKey("ErrorMessage"))
+                txtResult.setText(data.getExtras().getString("ErrorMessage"));
+            else
+                txtResult.setText("Платеж не проведен!");
         }
-	}
-	
+    }
+
     private void acceptPayment(double amount, String description, String imagePath) {
         Intent intent = new Intent("ru.ibox.pro.acceptpayment");
 
@@ -246,7 +260,7 @@ public class AcceptPaymentFragment extends Fragment {
 
         if (cbAux.isChecked()) {
             StringBuilder purchases = new StringBuilder("{")
-                    .append("\"Purchases\":").append("[");
+                .append("\"Purchases\":").append("[");
             for (int i = 0; i < purchasesAdapter.getCount(); i++) {
                 purchases.append(purchasesAdapter.getItem(i));
                 if (i != purchasesAdapter.getCount() - 1)
@@ -254,6 +268,9 @@ public class AcceptPaymentFragment extends Fragment {
             }
             purchases.append("]}");
             intent.putExtra("Purchases", purchases.toString());
+        }
+        if (cbTags.isChecked() && !tags.equals("")) {
+            intent.putExtra("Tags", tags);
         }
 
         if (cbReaderType.isChecked())
@@ -333,7 +350,7 @@ public class AcceptPaymentFragment extends Fragment {
 
         return strResult;
     }
-    
+
     private String getCameraImagePath() {
         return android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/camera.tmp";
     }
@@ -350,6 +367,25 @@ public class AcceptPaymentFragment extends Fragment {
         return null;
     }
 
+    private void showTagsDialog() {
+        final EditText edtTags = (EditText) LayoutInflater.from(getContext()).inflate(R.layout.dialog_purchase, null);
+        edtTags.setText(MainActivity.TEST_TAGS);
+        new AlertDialog.Builder(getContext())
+            .setView(edtTags)
+            .setPositiveButton("Добавить", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    tags = edtTags.getText().toString();
+                }
+            })
+            .setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
+                }
+            }).create().show();
+    }
+
     private void showPurchasesDialog() {
         AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(getContext());
         dialogBuilder.setNeutralButton("Добавить", new DialogInterface.OnClickListener() {
@@ -361,84 +397,84 @@ public class AcceptPaymentFragment extends Fragment {
             @Override
             public void onClick(final DialogInterface parent, final int i) {
                 new AlertDialog.Builder(getContext())
-                        .setMessage("Удалить продукт " + purchasesAdapter.getItem(i) + "?")
-                        .setPositiveButton("Да", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int j) {
-                                dialogInterface.dismiss();
-                                purchasesAdapter.remove(purchasesAdapter.getItem(i));
-                                purchasesAdapter.notifyDataSetChanged();
-                                ((AlertDialog) parent).show();
-                            }
-                        })
-                        .setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int j) {
-                                dialogInterface.dismiss();
-                                ((AlertDialog) parent).show();
-                            }
-                        })
-                        .create().show();
+                    .setMessage("Удалить продукт " + purchasesAdapter.getItem(i) + "?")
+                    .setPositiveButton("Да", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int j) {
+                            dialogInterface.dismiss();
+                            purchasesAdapter.remove(purchasesAdapter.getItem(i));
+                            purchasesAdapter.notifyDataSetChanged();
+                            ((AlertDialog) parent).show();
+                        }
+                    })
+                    .setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int j) {
+                            dialogInterface.dismiss();
+                            ((AlertDialog) parent).show();
+                        }
+                    })
+                    .create().show();
             }
         })
-        .create().show();
+            .create().show();
     }
 
     private void showAddPurchaseDialog(final Dialog parent) {
         final EditText edtPurchase = (EditText) LayoutInflater.from(getContext()).inflate(R.layout.dialog_purchase, null);
         edtPurchase.setText(MainActivity.TEST_PURCHASE);
         new AlertDialog.Builder(getContext())
-                .setView(edtPurchase)
-                .setPositiveButton("Добавить", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        try {
-                            new JSONObject(edtPurchase.getText().toString());
-                            purchasesAdapter.add(edtPurchase.getText().toString());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            Toast.makeText(getContext(), "Ошибка!", Toast.LENGTH_LONG).show();
-                        }
-                        parent.show();
+            .setView(edtPurchase)
+            .setPositiveButton("Добавить", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    try {
+                        new JSONObject(edtPurchase.getText().toString());
+                        purchasesAdapter.add(edtPurchase.getText().toString());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        Toast.makeText(getContext(), "Ошибка!", Toast.LENGTH_LONG).show();
                     }
-                })
-                .setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                        parent.show();
-                    }
-                }).create().show();
+                    parent.show();
+                }
+            })
+            .setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
+                    parent.show();
+                }
+            }).create().show();
     }
 
     private void showSetProductDialog() {
         final EditText edtProduct = (EditText) LayoutInflater.from(getContext()).inflate(R.layout.dialog_purchase, null);
         edtProduct.setText(MainActivity.TEST_PRODUCT);
         new AlertDialog.Builder(getContext())
-                .setView(edtProduct)
-                .setPositiveButton("Добавить", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        product = edtProduct.getText().toString();
-                    }
-                })
-                .setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-                    }
-                }).create().show();
+            .setView(edtProduct)
+            .setPositiveButton("Добавить", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    product = edtProduct.getText().toString();
+                }
+            })
+            .setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
+                }
+            }).create().show();
     }
 
     private void showReaderTypeDialog() {
         new AlertDialog.Builder(getContext())
-                .setSingleChoiceItems(R.array.reader_types, 0, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        readerType = getResources().getStringArray(R.array.reader_types)[which];
-                        dialog.dismiss();
-                    }
-                })
-        .create().show();
+            .setSingleChoiceItems(R.array.reader_types, 0, new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    readerType = getResources().getStringArray(R.array.reader_types)[which];
+                    dialog.dismiss();
+                }
+            })
+            .create().show();
     }
 }
