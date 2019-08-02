@@ -8,9 +8,10 @@ import java.util.Calendar;
 
 public class MainActivity extends FragmentActivity {
     static final String TEST_PURCHASE = "{"
-        + "\n\t\"Title\": \"Позиция без ндс\","
+        + "\n\t\"Title\": \"Позиция ндс 20%\","
         + "\n\t\"Price\": 111.256,"
         + "\n\t\"Quantity\": 2,"
+        + "\n\t\"TaxCode\": [\"VAT2000\"],"
         + "\n\t\"1005\": \"г Москва\","
         + "\n\t\"1016\": \"7736642031\","
         + "\n\t\"1026\": \"АО Смартфин\","
