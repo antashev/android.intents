@@ -26,17 +26,19 @@ public class ReverseFragment extends Fragment {
 	private EditText edtLogin, edtPassword, edtExtID, edtAmount, edtReceiptEmail, edtReceiptPhone;
 	private EditText edtTrID;
     private EditText edtHeader, edtFooter;
-	private CheckBox cbAmount, cbAux, cbReaderType, cbPrintCopy;
+	private CheckBox cbAmount, cbAux, cbReaderType, cbPrintCopy, cbTags;
     private Button   btnReturn, btnCancel;
     private EditText txtResult;
 
 	private String readerType;
 	private ArrayAdapter<String> purchasesAdapter;
+	private String tags;
 
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		readerType = null;
+		tags = "";
 		purchasesAdapter = new ArrayAdapter<String>(getContext(), android.R.layout.test_list_item, new ArrayList<String>());
 	}
 
@@ -58,6 +60,16 @@ public class ReverseFragment extends Fragment {
 					purchasesAdapter.clear();
 			}
 		});
+		cbTags.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+			@Override
+			public void onCheckedChanged(final CompoundButton compoundButton, final boolean checked) {
+				if (checked) {
+					showTagsDialog();
+				} else {
+					tags = "";
+				}
+			}
+		});
 		cbReaderType.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
 			@Override
 			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -74,6 +86,7 @@ public class ReverseFragment extends Fragment {
 		super.onPause();
 		cbAmount.setOnCheckedChangeListener(null);
 		cbAux.setOnCheckedChangeListener(null);
+		cbTags.setOnCheckedChangeListener(null);
 		cbReaderType.setOnCheckedChangeListener(null);
 	}
 
@@ -91,6 +104,7 @@ public class ReverseFragment extends Fragment {
 		edtFooter = (EditText)view.findViewById(R.id.edtFooter);
 		cbAmount = (CheckBox)view.findViewById(R.id.cbAmount);
 		cbAux = (CheckBox)view.findViewById(R.id.cbAux);
+		cbTags = (CheckBox)view.findViewById(R.id.cbTags);
 		cbReaderType = (CheckBox)view.findViewById(R.id.cbReaderType);
 		cbPrintCopy = (CheckBox)view.findViewById(R.id.cbPrintCopy);
 		edtTrID = (EditText)view.findViewById(R.id.edtTrId);
@@ -141,7 +155,14 @@ public class ReverseFragment extends Fragment {
 				if (i != purchasesAdapter.getCount() - 1)
 					purchases.append(",");
 			}
-			purchases.append("]}");
+			if (cbTags.isChecked() && !tags.equals("")) {
+				purchases.append("],");
+				purchases.append("\"Tags\":");
+				purchases.append(tags);
+				purchases.append("}");
+			} else {
+				purchases.append("]}");
+			}
 			intent.putExtra("Purchases", purchases.toString());
 		}
 		if (cbReaderType.isChecked())
@@ -287,6 +308,25 @@ public class ReverseFragment extends Fragment {
 			}
 		})
 				.create().show();
+	}
+
+	private void showTagsDialog() {
+		final EditText edtTags = (EditText) LayoutInflater.from(getContext()).inflate(R.layout.dialog_purchase, null);
+		edtTags.setText(MainActivity.TEST_TAGS);
+		new AlertDialog.Builder(getContext())
+			.setView(edtTags)
+			.setPositiveButton("Добавить", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialogInterface, int i) {
+					tags = edtTags.getText().toString();
+				}
+			})
+			.setNegativeButton("Отмена", new DialogInterface.OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialogInterface, int i) {
+					dialogInterface.dismiss();
+				}
+			}).create().show();
 	}
 
 	private void showAddPurchaseDialog(final Dialog parent) {

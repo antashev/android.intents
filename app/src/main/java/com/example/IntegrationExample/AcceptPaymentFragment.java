@@ -266,11 +266,15 @@ public class AcceptPaymentFragment extends Fragment {
                 if (i != purchasesAdapter.getCount() - 1)
                     purchases.append(",");
             }
-            purchases.append("]}");
+            if (cbTags.isChecked() && !tags.equals("")) {
+                purchases.append("],");
+                purchases.append("\"Tags\":");
+                purchases.append(tags);
+                purchases.append("}");
+            } else {
+                purchases.append("]}");
+            }
             intent.putExtra("Purchases", purchases.toString());
-        }
-        if (cbTags.isChecked() && !tags.equals("")) {
-            intent.putExtra("Tags", tags);
         }
 
         if (cbReaderType.isChecked())
